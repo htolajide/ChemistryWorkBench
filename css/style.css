@@ -452,3 +452,16 @@ footer{padding:14px 28px 22px;font-size:11px;color:var(--ink-soft);border-top:1p
 .lab-report .lab-table td{padding:3px 6px;border-bottom:1px dashed var(--paper-edge);}
 .lab-report .lab-warn{color:var(--amber);font-size:11.5px;margin-top:6px;}
 .lab-report .lab-notes{margin-top:10px;font-size:11px;color:var(--ink-soft);line-height:1.5;}
+
+/* custom reaction: labelled quantity inputs with units */
+.qty-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:2px;}
+.qty-field{display:flex;flex-direction:column;gap:3px;flex:1 1 90px;min-width:0;}
+.qty-field .qty-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);}
+.qty-field .qty-box{display:flex;align-items:stretch;border:1px solid var(--paper-edge);border-radius:8px;background:var(--paper);overflow:hidden;}
+.qty-field .qty-box input{flex:1;min-width:0;border:0 !important;border-radius:0 !important;background:transparent !important;padding:7px 8px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink);}
+.qty-field .qty-unit{display:flex;align-items:center;padding:0 9px;font-size:11.5px;color:var(--ink-soft);background:var(--paper-raised);border-left:1px solid var(--paper-edge);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.qty-gas-note{font-size:10.5px;color:var(--ink-soft);padding-bottom:9px;flex:1 1 100%;}
+.qty-amount{font-size:11px;color:var(--success-text);font-family:'IBM Plex Mono',monospace;margin-top:6px;}
+.qty-amount.bad{color:var(--red);}
+#c-reactants-list .reaction-row .formula-cell{flex:1 1 0;}
+#c-reactants-list .reaction-row select.phase-cell{flex:1.3 1 0;min-width:0;}
