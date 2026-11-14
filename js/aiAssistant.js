@@ -1,9 +1,12 @@
 // js/aiAssistant.js
+// js/aiAssistant.js — replace the last lines with this
+
 class AIAssistant {
     constructor() {
         this.model = null;
         this.yieldModel = null;
         this.isReady = false;
+        this.isLoading = false;
         this.trainingHistory = [];
         this.featureNames = [
             'mw', 'density', 'pka', 'pkb', 
@@ -11,22 +14,64 @@ class AIAssistant {
             'isSolid', 'isLiquid', 'meltingPoint', 'boilingPoint'
         ];
         this.reactionTypes = ['acid-base', 'redox', 'precipitation', 'combustion', 'decomposition'];
-        this.init();
+        // DON'T auto-init here — wait for DOM + TensorFlow
     }
 
     async init() {
+        console.log('🤖 AI Assistant initializing...');
+        
+        // Wait for TensorFlow
+        if (typeof tf === 'undefined') {
+            this.updateStatus('Loading TensorFlow...');
+            try {
+                await this.waitForTF();
+            } catch (err) {
+                console.error('TensorFlow load failed:', err);
+                this.updateStatus('TF Error');
+                return;
+            }
+        }
+        
+        this.isLoading = true;
+        this.updateStatus('Building models...');
+        
         try {
             await this.buildModels();
+            this.updateStatus('Training...');
             await this.trainOnKnownReactions();
             this.isReady = true;
-            console.log('🤖 AI Assistant ready');
+            this.isLoading = false;
+            
+            // This is the key line - make sure it says "Ready" not "Loading"
             this.updateStatus('Ready');
+            
+            console.log('✅ AI Assistant ready!');
         } catch (err) {
-            console.error('AI initialization failed:', err);
-            this.updateStatus('Error');
+            console.error('❌ AI initialization failed:', err);
+            this.isReady = false;
+            this.isLoading = false;
+            this.updateStatus('Error: ' + err.message);
         }
     }
 
+    async waitForTF(timeout = 15000) {
+        const start = Date.now();
+        return new Promise((resolve, reject) => {
+            const check = () => {
+                if (typeof tf !== 'undefined') {
+                    resolve();
+                } else if (Date.now() - start > timeout) {
+                    reject(new Error('TensorFlow.js failed to load'));
+                } else {
+                    setTimeout(check, 100);
+                }
+            };
+            check();
+        });
+    }
+    // ... [keep all other methods: buildModels, extractFeatures, 
+    //      trainOnKnownReactions, predictReactionType, estimateYield, 
+    //      suggestReagents, explainReaction, getSafetyAdvice, etc.]
     async buildModels() {
         // Reaction Type Classifier
         this.model = tf.sequential();
@@ -376,7 +421,24 @@ class AIAssistant {
 
     updateStatus(status) {
         const el = document.getElementById('ai-status');
-        if (el) el.textContent = status;
+        if (el) {
+            // Remove all status classes first
+            el.classList.remove('loading', 'ready', 'error');
+            
+            // Add new status class
+            if (status === 'Ready') {
+                el.classList.add('ready');
+            } else if (status.includes('Error')) {
+                el.classList.add('error');
+            } else {
+                el.classList.add('loading');
+            }
+            
+            el.textContent = status;
+            console.log('AI Status:', status);
+        } else {
+            console.warn('AI status element not found');
+        }
     }
 
     // Dispose tensors to prevent memory leaks
@@ -386,5 +448,17 @@ class AIAssistant {
     }
 }
 
-// Initialize global AI assistant
+// Global instance — but don't auto-init
 const aiAssistant = new AIAssistant();
+
+// Initialize only when DOM is ready AND TensorFlow is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure all scripts are parsed
+    setTimeout(() => {
+        aiAssistant.init().catch(err => {
+            console.error('AI init error:', err);
+            aiAssistant.updateStatus('Error');
+        });
+    }, 100);
+});
+
